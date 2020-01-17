@@ -1,13 +1,5 @@
 package com.alibaba.excel.read.metadata.holder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.converters.ConverterKeyBuild;
@@ -31,6 +23,13 @@ import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.ConverterUtils;
 import com.alibaba.excel.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Read Holder
@@ -71,7 +70,7 @@ public abstract class AbstractReadHolder extends AbstractHolder implements ReadH
         }
 
         // Initialization property
-        this.excelReadHeadProperty = new ExcelReadHeadProperty(this, getClazz(), getHead(), convertAllFiled);
+        this.excelReadHeadProperty = new ExcelReadHeadProperty(this, getClazz(), getHead(), getHeadConverter(), convertAllFiled);
         if (readBasicParameter.getHeadRowNumber() == null) {
             if (parentAbstractReadHolder == null) {
                 if (excelReadHeadProperty.hasHead()) {

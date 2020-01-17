@@ -1,17 +1,5 @@
 package com.alibaba.excel.write.metadata.holder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.IndexedColors;
-
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.converters.ConverterKeyBuild;
 import com.alibaba.excel.converters.DefaultConverterLoader;
@@ -24,12 +12,7 @@ import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.metadata.TableStyle;
 import com.alibaba.excel.metadata.property.RowHeightProperty;
 import com.alibaba.excel.util.CollectionUtils;
-import com.alibaba.excel.write.handler.CellWriteHandler;
-import com.alibaba.excel.write.handler.DefaultWriteHandlerLoader;
-import com.alibaba.excel.write.handler.RowWriteHandler;
-import com.alibaba.excel.write.handler.SheetWriteHandler;
-import com.alibaba.excel.write.handler.WorkbookWriteHandler;
-import com.alibaba.excel.write.handler.WriteHandler;
+import com.alibaba.excel.write.handler.*;
 import com.alibaba.excel.write.metadata.WriteBasicParameter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.WriteTable;
@@ -39,6 +22,10 @@ import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import com.alibaba.excel.write.style.column.AbstractHeadColumnWidthStyleStrategy;
 import com.alibaba.excel.write.style.row.SimpleRowHeightStyleStrategy;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+
+import java.util.*;
 
 /**
  * Write holder configuration
@@ -163,7 +150,7 @@ public abstract class AbstractWriteHolder extends AbstractHolder implements Writ
         }
 
         // Initialization property
-        this.excelWriteHeadProperty = new ExcelWriteHeadProperty(this, getClazz(), getHead(), convertAllFiled);
+        this.excelWriteHeadProperty = new ExcelWriteHeadProperty(this, getClazz(), getHead(), getHeadConverter(), convertAllFiled);
 
         // Compatible with old code
         compatibleOldCode(writeBasicParameter);

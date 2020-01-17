@@ -1,8 +1,8 @@
 package com.alibaba.excel.metadata;
 
-import java.util.List;
-
 import com.alibaba.excel.converters.Converter;
+
+import java.util.List;
 
 /**
  * Basic parameter
@@ -18,6 +18,11 @@ public class BasicParameter {
      * You can only choose one of the {@link BasicParameter#head} and {@link BasicParameter#clazz}
      */
     private Class clazz;
+
+    /**
+     * the transformation class bound to head
+     */
+    private List<HeadConverter> headConverter;
     /**
      * Custom type conversions override the default
      */
@@ -75,4 +80,11 @@ public class BasicParameter {
         this.use1904windowing = use1904windowing;
     }
 
+    public List<HeadConverter> getHeadConverter() {
+        return headConverter;
+    }
+
+    public void setHeadConverter(List<HeadConverter> headConverter) {
+        this.headConverter = headConverter;
+    }
 }

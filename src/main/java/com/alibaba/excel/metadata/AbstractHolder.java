@@ -1,9 +1,9 @@
 package com.alibaba.excel.metadata;
 
+import com.alibaba.excel.converters.Converter;
+
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.excel.converters.Converter;
 
 /**
  * Write/read holder
@@ -23,6 +23,10 @@ public abstract class AbstractHolder implements ConfigurationHolder {
      * You can only choose one of the {@link AbstractHolder#head} and {@link AbstractHolder#clazz}
      */
     private Class clazz;
+    /**
+     * the transformation class bound to head
+     */
+    private List<HeadConverter> headConverter;
     /**
      * Some global variables
      */
@@ -47,6 +51,11 @@ public abstract class AbstractHolder implements ConfigurationHolder {
             this.clazz = prentAbstractHolder.getClazz();
         } else {
             this.clazz = basicParameter.getClazz();
+        }
+        if (basicParameter.getHeadConverter() == null  && prentAbstractHolder != null) {
+            this.headConverter = prentAbstractHolder.getHeadConverter();
+        } else {
+            this.headConverter = basicParameter.getHeadConverter();
         }
         this.globalConfiguration = new GlobalConfiguration();
         if (basicParameter.getAutoTrim() == null) {
@@ -115,4 +124,11 @@ public abstract class AbstractHolder implements ConfigurationHolder {
         return getNewInitialization();
     }
 
+    public List<HeadConverter> getHeadConverter() {
+        return headConverter;
+    }
+
+    public void setHeadConverter(List<HeadConverter> headConverter) {
+        this.headConverter = headConverter;
+    }
 }

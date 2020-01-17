@@ -1,17 +1,18 @@
 package com.alibaba.excel.write.builder;
 
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.converters.Converter;
+import com.alibaba.excel.metadata.HeadConverter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.handler.WriteHandler;
+import com.alibaba.excel.write.metadata.WriteWorkbook;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.converters.Converter;
-import com.alibaba.excel.support.ExcelTypeEnum;
-import com.alibaba.excel.write.handler.WriteHandler;
-import com.alibaba.excel.write.metadata.WriteWorkbook;
 
 /**
  * Build ExcelBuilder
@@ -178,6 +179,17 @@ public class ExcelWriterBuilder {
     @Deprecated
     public ExcelWriterBuilder convertAllFiled(Boolean convertAllFiled) {
         writeWorkbook.setConvertAllFiled(convertAllFiled);
+        return this;
+    }
+
+    /**
+     * Register the transformation class bound to head
+     *
+     * @param headConverter
+     * @return
+     */
+    public ExcelWriterBuilder registerHeadConverter(List<HeadConverter> headConverter) {
+        writeWorkbook.setHeadConverter(headConverter);
         return this;
     }
 

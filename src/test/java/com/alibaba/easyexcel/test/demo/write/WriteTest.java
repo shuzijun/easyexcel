@@ -1,20 +1,5 @@
 package com.alibaba.easyexcel.test.demo.write;
 
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.alibaba.easyexcel.test.util.TestFileUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
@@ -24,6 +9,7 @@ import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentRowHeight;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.alibaba.excel.metadata.HeadConverter;
 import com.alibaba.excel.util.FileUtils;
 import com.alibaba.excel.write.merge.LoopMergeStrategy;
 import com.alibaba.excel.write.metadata.WriteSheet;
@@ -32,6 +18,16 @@ import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 /**
  * 写的常见写法
@@ -202,6 +198,16 @@ public class WriteTest {
     }
 
     /**
+     * 对字段增加转化类型
+     */
+    @Test
+    public void headConverterWrite() {
+        String fileName = TestFileUtil.getPath() + "headConverterWrite" + System.currentTimeMillis() + ".xlsx";
+        // 这里 需要指定写用哪个class去写，然后写到第一个sheet，名字为模板 然后文件流会自动关闭
+        EasyExcel.write(fileName, DemoData.class).registerHeadConverter(headConverter()).sheet("模板").doWrite(data());
+    }
+
+    /**
      * 图片导出
      * <p>
      * 1. 创建excel对应的实体对象 参照{@link ImageData}
@@ -286,7 +292,7 @@ public class WriteTest {
         // 背景设置为红色
         headWriteCellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
         WriteFont headWriteFont = new WriteFont();
-        headWriteFont.setFontHeightInPoints((short)20);
+        headWriteFont.setFontHeightInPoints((short) 20);
         headWriteCellStyle.setWriteFont(headWriteFont);
         // 内容的策略
         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
@@ -296,7 +302,7 @@ public class WriteTest {
         contentWriteCellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
         WriteFont contentWriteFont = new WriteFont();
         // 字体大小
-        contentWriteFont.setFontHeightInPoints((short)20);
+        contentWriteFont.setFontHeightInPoints((short) 20);
         contentWriteCellStyle.setWriteFont(contentWriteFont);
         // 这个策略是 头是头的样式 内容是内容的样式 其他的策略可以自己实现
         HorizontalCellStyleStrategy horizontalCellStyleStrategy =
@@ -425,6 +431,17 @@ public class WriteTest {
         EasyExcel.write(fileName).head(head()).sheet("模板").doWrite(dataList());
     }
 
+    /**
+     * 增加对数据的格式化
+     */
+    @Test
+    public void noModleConverterWrite() {
+        // 写法1
+        String fileName = TestFileUtil.getPath() + "noModleConverterWrite" + System.currentTimeMillis() + ".xlsx";
+        // 这里 需要指定写用哪个class去写，然后写到第一个sheet，名字为模板 然后文件流会自动关闭
+        EasyExcel.write(fileName).head(head()).registerHeadConverter(headConverter()).sheet("模板").doWrite(dataList());
+    }
+
     private List<LongestMatchColumnWidthData> dataLong() {
         List<LongestMatchColumnWidthData> list = new ArrayList<LongestMatchColumnWidthData>();
         for (int i = 0; i < 10; i++) {
@@ -472,6 +489,25 @@ public class WriteTest {
             data.setDoubleData(0.56);
             list.add(data);
         }
+        return list;
+    }
+
+    private List<HeadConverter> headConverter() {
+        List<HeadConverter> list = new ArrayList<HeadConverter>();
+        HeadConverter stringHeadConverter = new HeadConverter();
+
+        stringHeadConverter.setColumnIndex(0);
+        stringHeadConverter.setFieldName("string");
+
+        Map<String, String> mappings = new HashMap<String, String>();
+        mappings.put("字符串1", "格式化字符串1");
+        mappings.put("字符串5", "格式化字符串1");
+
+        HeadConverterImpl headConverter = new HeadConverterImpl(mappings);
+        stringHeadConverter.setConverter(headConverter);
+
+        list.add(stringHeadConverter);
+
         return list;
     }
 
