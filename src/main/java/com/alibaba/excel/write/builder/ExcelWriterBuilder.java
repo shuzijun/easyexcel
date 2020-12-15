@@ -1,13 +1,15 @@
 package com.alibaba.excel.write.builder;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.HeadConverter;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.excel.write.metadata.WriteWorkbook;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Build ExcelBuilder
@@ -152,6 +154,16 @@ public class ExcelWriterBuilder extends AbstractExcelWriterParameterBuilder<Exce
             excelWriterSheetBuilder.sheetName(sheetName);
         }
         return excelWriterSheetBuilder;
+    }
+    /**
+     * Register the transformation class bound to head
+     *
+     * @param headConverter
+     * @return
+     */
+    public ExcelWriterBuilder registerHeadConverter(List<HeadConverter> headConverter) {
+        writeWorkbook.setHeadConverter(headConverter);
+        return this;
     }
 
     @Override

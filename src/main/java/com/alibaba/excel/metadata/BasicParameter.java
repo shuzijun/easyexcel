@@ -20,6 +20,10 @@ public class BasicParameter {
      */
     private Class clazz;
     /**
+     * the transformation class bound to head
+     */
+    private List<HeadConverter> headConverter;
+    /**
      * Custom type conversions override the default
      */
     private List<Converter> customConverterList;
@@ -102,5 +106,13 @@ public class BasicParameter {
 
     public void setUseScientificFormat(Boolean useScientificFormat) {
         this.useScientificFormat = useScientificFormat;
+    }
+
+    public List<HeadConverter> getHeadConverter() {
+        return headConverter;
+    }
+
+    public void setHeadConverter(List<HeadConverter> headConverter) {
+        this.headConverter = headConverter;
     }
 }

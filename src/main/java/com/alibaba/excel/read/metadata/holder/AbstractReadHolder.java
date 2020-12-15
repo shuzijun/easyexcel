@@ -68,7 +68,7 @@ public abstract class AbstractReadHolder extends AbstractHolder implements ReadH
         }
 
         // Initialization property
-        this.excelReadHeadProperty = new ExcelReadHeadProperty(this, getClazz(), getHead(), convertAllFiled);
+        this.excelReadHeadProperty = new ExcelReadHeadProperty(this, getClazz(), getHead(), getHeadConverter(), convertAllFiled);
         if (readBasicParameter.getHeadRowNumber() == null) {
             if (parentAbstractReadHolder == null) {
                 if (excelReadHeadProperty.hasHead()) {

@@ -1,16 +1,5 @@
 package com.alibaba.excel.metadata.property;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -19,11 +8,17 @@ import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.exception.ExcelCommonException;
 import com.alibaba.excel.metadata.Head;
+import com.alibaba.excel.metadata.HeadConverter;
 import com.alibaba.excel.metadata.Holder;
 import com.alibaba.excel.util.ClassUtils;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.StringUtils;
 import com.alibaba.excel.write.metadata.holder.AbstractWriteHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Define the header attribute of excel
@@ -62,7 +57,7 @@ public class ExcelHeadProperty {
      */
     private Map<String, Field> ignoreMap;
 
-    public ExcelHeadProperty(Holder holder, Class headClazz, List<List<String>> head, Boolean convertAllFiled) {
+    public ExcelHeadProperty(Holder holder, Class headClazz, List<List<String>> head, List<HeadConverter> headConverter, Boolean convertAllFiled) {
         this.headClazz = headClazz;
         headMap = new TreeMap<Integer, Head>();
         contentPropertyMap = new TreeMap<Integer, ExcelContentProperty>();
@@ -71,6 +66,12 @@ public class ExcelHeadProperty {
         headKind = HeadKindEnum.NONE;
         headRowNumber = 0;
         if (head != null && !head.isEmpty()) {
+            Map<Integer,HeadConverter> headConverterMap = new HashMap<Integer, HeadConverter>();
+            if(!CollectionUtils.isEmpty(headConverter)){
+                for (HeadConverter converter : headConverter) {
+                    headConverterMap.put(converter.getColumnIndex(),converter);
+                }
+            }
             int headIndex = 0;
             for (int i = 0; i < head.size(); i++) {
                 if (holder instanceof AbstractWriteHolder) {
@@ -80,12 +81,19 @@ public class ExcelHeadProperty {
                 }
                 headMap.put(headIndex, new Head(headIndex, null, head.get(i), Boolean.FALSE, Boolean.TRUE));
                 contentPropertyMap.put(headIndex, null);
+                if(headConverterMap.containsKey(headIndex)) {
+                    ExcelContentProperty excelContentProperty = new ExcelContentProperty();
+                    excelContentProperty.setConverter(headConverterMap.get(headIndex).getConverter());
+                    contentPropertyMap.put(headIndex, excelContentProperty);
+                } else {
+                    contentPropertyMap.put(headIndex, null);
+                }
                 headIndex++;
             }
             headKind = HeadKindEnum.STRING;
         }
         // convert headClazz to head
-        initColumnProperties(holder, convertAllFiled);
+        initColumnProperties(holder, convertAllFiled, headConverter);
 
         initHeadRowNumber();
         if (LOGGER.isDebugEnabled()) {
@@ -113,7 +121,7 @@ public class ExcelHeadProperty {
         }
     }
 
-    private void initColumnProperties(Holder holder, Boolean convertAllFiled) {
+    private void initColumnProperties(Holder holder, Boolean convertAllFiled, List<HeadConverter> headConverter) {
         if (headClazz == null) {
             return;
         }
@@ -129,8 +137,14 @@ public class ExcelHeadProperty {
         ClassUtils.declaredFields(headClazz, sortedAllFiledMap, indexFiledMap, ignoreMap, convertAllFiled, needIgnore,
             holder);
 
+        Map<String,HeadConverter> convertHeadMap = new HashMap<String, HeadConverter>();
+        if(!CollectionUtils.isEmpty(headConverter)){
+            for (HeadConverter converter : headConverter) {
+                convertHeadMap.put(converter.getFieldName(),converter);
+            }
+        }
         for (Map.Entry<Integer, Field> entry : sortedAllFiledMap.entrySet()) {
-            initOneColumnProperty(entry.getKey(), entry.getValue(), indexFiledMap.containsKey(entry.getKey()));
+            initOneColumnProperty(entry.getKey(), entry.getValue(), indexFiledMap.containsKey(entry.getKey()), convertHeadMap);
         }
         headKind = HeadKindEnum.CLASS;
     }
@@ -143,7 +157,7 @@ public class ExcelHeadProperty {
      * @param forceIndex
      * @return Ignore current field
      */
-    private void initOneColumnProperty(int index, Field field, Boolean forceIndex) {
+    private void initOneColumnProperty(int index, Field field, Boolean forceIndex, Map<String,HeadConverter> headConverterMap) {
         ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
         List<String> tmpHeadList = new ArrayList<String>();
         boolean notForceName = excelProperty == null || excelProperty.value().length <= 0
@@ -159,7 +173,9 @@ public class ExcelHeadProperty {
         }
         Head head = new Head(index, field.getName(), tmpHeadList, forceIndex, !notForceName);
         ExcelContentProperty excelContentProperty = new ExcelContentProperty();
-        if (excelProperty != null) {
+        if (headConverterMap.containsKey(field.getName())) {
+            excelContentProperty.setConverter(headConverterMap.get(field.getName()).getConverter());
+        } else if (excelProperty != null) {
             Class<? extends Converter> convertClazz = excelProperty.converter();
             if (convertClazz != AutoConverter.class) {
                 try {

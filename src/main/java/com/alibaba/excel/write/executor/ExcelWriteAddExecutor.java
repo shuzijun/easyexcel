@@ -1,16 +1,5 @@
 package com.alibaba.excel.write.executor;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-
 import com.alibaba.excel.context.WriteContext;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.CellData;
@@ -20,13 +9,15 @@ import com.alibaba.excel.util.ClassUtils;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.WorkBookUtil;
 import com.alibaba.excel.util.WriteHandlerUtils;
-import com.alibaba.excel.write.metadata.WriteWorkbook;
-import com.alibaba.excel.write.metadata.holder.AbstractWriteHolder;
 import com.alibaba.excel.write.metadata.holder.WriteHolder;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-
 import net.sf.cglib.beans.BeanMap;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Add the data into excel
@@ -79,6 +70,7 @@ public class ExcelWriteAddExecutor extends AbstractExcelWriteExecutor {
             return;
         }
         Map<Integer, Head> headMap = writeContext.currentWriteHolder().excelWriteHeadProperty().getHeadMap();
+        Map<Integer, ExcelContentProperty> contentPropertyMap = writeContext.currentWriteHolder().excelWriteHeadProperty().getContentPropertyMap();
         int dataIndex = 0;
         int cellIndex = 0;
         for (Map.Entry<Integer, Head> entry : headMap.entrySet()) {
@@ -87,7 +79,7 @@ public class ExcelWriteAddExecutor extends AbstractExcelWriteExecutor {
             }
             cellIndex = entry.getKey();
             Head head = entry.getValue();
-            doAddBasicTypeToExcel(oneRowData, head, row, relativeRowIndex, dataIndex++, cellIndex);
+            doAddBasicTypeToExcel(oneRowData, head, row, relativeRowIndex, dataIndex++, cellIndex, contentPropertyMap.get(cellIndex));
         }
         // Finish
         if (dataIndex >= oneRowData.size()) {
@@ -98,18 +90,19 @@ public class ExcelWriteAddExecutor extends AbstractExcelWriteExecutor {
         }
         int size = oneRowData.size() - dataIndex;
         for (int i = 0; i < size; i++) {
-            doAddBasicTypeToExcel(oneRowData, null, row, relativeRowIndex, dataIndex++, cellIndex++);
+            doAddBasicTypeToExcel(oneRowData, null, row, relativeRowIndex, dataIndex++, cellIndex++, contentPropertyMap.get(cellIndex));
+            cellIndex++;
         }
     }
 
     private void doAddBasicTypeToExcel(List<Object> oneRowData, Head head, Row row, int relativeRowIndex, int dataIndex,
-        int cellIndex) {
+        int cellIndex, ExcelContentProperty excelContentProperty) {
         WriteHandlerUtils.beforeCellCreate(writeContext, row, head, cellIndex, relativeRowIndex, Boolean.FALSE);
         Cell cell = WorkBookUtil.createCell(row, cellIndex);
         WriteHandlerUtils.afterCellCreate(writeContext, cell, head, relativeRowIndex, Boolean.FALSE);
         Object value = oneRowData.get(dataIndex);
         CellData cellData = converterAndSet(writeContext.currentWriteHolder(), value == null ? null : value.getClass(),
-            cell, value, null, head, relativeRowIndex);
+            cell, value, excelContentProperty, head, relativeRowIndex);
         WriteHandlerUtils.afterCellDispose(writeContext, cellData, cell, head, relativeRowIndex, Boolean.FALSE);
     }
 
